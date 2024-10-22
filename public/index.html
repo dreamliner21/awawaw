@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Canvafy Card Generator</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Canvafy Card Generator</h1>
+
+    <form id="card-form">
+      <select id="card-type" required>
+        <option value="">Pilih Card</option>
+        <option value="spotify">Spotify</option>
+        <option value="twitter">Twitter</option>
+        <option value="instagram">Instagram</option>
+      </select>
+
+      <div id="input-fields"></div>
+
+      <button type="submit">Generate Card</button>
+    </form>
+
+    <div id="card-result" class="card-result"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('card-form');
+    const inputFields = document.getElementById('input-fields');
+    const resultDiv = document.getElementById('card-result');
+
+    form.addEventListener('change', (e) => {
+      const cardType = document.getElementById('card-type').value;
+      inputFields.innerHTML = getInputFields(cardType);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cardType = document.getElementById('card-type').value;
+
+      const params = new URLSearchParams(new FormData(form)).toString();
+      try {
+        const response = await fetch(`/${cardType}?${params}`);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        resultDiv.innerHTML = `<img src="${url}" alt="${cardType} Card" />`;
+      } catch (error) {
+        console.error('Error generating card:', error);
+        resultDiv.textContent = 'Gagal membuat card.';
+      }
+    });
+
+    function getInputFields(type) {
+      switch (type) {
+        case 'spotify':
+          return `
+            <input name="author" placeholder="Author" />
+            <input name="album" placeholder="Album" />
+            <input name="title" placeholder="Title" />
+            <input name="blur" type="number" placeholder="Blur (0-15)" />
+            <input name="opacity" type="number" step="0.1" placeholder="Opacity (0-1)" />
+            <input name="timestampCurrent" type="number" placeholder="Current Timestamp (ms)" />
+            <input name="timestampMax" type="number" placeholder="Max Timestamp (ms)" />
+          `;
+        case 'twitter':
+          return `
+            <input name="theme" placeholder="Theme (light/dim/dark)" />
+            <input name="displayName" placeholder="Display Name" />
+            <input name="username" placeholder="Username" />
+            <input name="comment" placeholder="Comment" />
+            <input name="verified" type="checkbox" /> Verified
+            <input name="avatar" placeholder="Avatar URL" />
+          `;
+        case 'instagram':
+          return `
+            <input name="theme" placeholder="Theme (light/dark)" />
+            <input name="username" placeholder="Username" />
+            <input name="likeCount" type="number" placeholder="Like Count" />
+            <input name="likeText" placeholder="Like Text" />
+            <input name="story" type="checkbox" /> Story
+            <input name="verified" type="checkbox" /> Verified
+            <input name="avatar" placeholder="Avatar URL" />
+            <input name="postImage" placeholder="Post Image URL" />
+            <input name="liked" type="checkbox" /> Liked
+            <input name="saved" type="checkbox" /> Saved
+          `;
+        default:
+          return '';
+      }
+    }
+  </script>
+</body>
+</html>
